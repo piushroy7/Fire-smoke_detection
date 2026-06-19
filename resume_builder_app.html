@@ -1,0 +1,734 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  #app {
+    font-family: 'Inter', sans-serif;
+    background: var(--color-background-tertiary);
+    min-height: 100vh;
+    color: var(--color-text-primary);
+  }
+
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ─── ROLE SELECTION ─── */
+  #screen-roles {
+    padding: 2rem 1.5rem;
+    min-height: 100vh;
+  }
+
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 2.5rem;
+  }
+  .brand-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: #1D4ED8; display: flex; align-items: center; justify-content: center;
+  }
+  .brand-icon i { font-size: 18px; color: #fff; }
+  .brand-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px; font-weight: 700; letter-spacing: -0.3px;
+    color: var(--color-text-primary);
+  }
+  .brand-name span { color: #3B82F6; }
+
+  .hero { text-align: center; margin-bottom: 2.5rem; }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+    color: var(--color-text-primary); margin-bottom: 8px; line-height: 1.25;
+  }
+  .hero p { font-size: 15px; color: var(--color-text-secondary); }
+
+  .category-tabs {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .cat-tab {
+    padding: 6px 16px; border-radius: 20px; cursor: pointer;
+    font-size: 13px; font-weight: 500; border: 1px solid var(--color-border-secondary);
+    background: var(--color-background-primary); color: var(--color-text-secondary);
+    transition: all 0.15s;
+  }
+  .cat-tab.active, .cat-tab:hover {
+    background: #3B82F6; color: #fff; border-color: #3B82F6;
+  }
+
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px; max-width: 900px; margin: 0 auto;
+  }
+
+  .role-card {
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: 14px; padding: 1.1rem 1rem;
+    cursor: pointer; transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .role-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .role-card.selected {
+    border-color: var(--accent); border-width: 2px;
+    background: var(--accent-bg);
+  }
+  .role-card .check {
+    position: absolute; top: 10px; right: 10px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); display: none;
+    align-items: center; justify-content: center;
+  }
+  .role-card.selected .check { display: flex; }
+  .role-card .check i { font-size: 11px; color: #fff; }
+
+  .role-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px; font-size: 20px;
+    background: var(--accent-bg);
+  }
+  .role-icon i { color: var(--accent); }
+
+  .role-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--color-text-primary); }
+  .role-tag {
+    font-size: 11px; color: var(--color-text-secondary);
+    background: var(--color-background-secondary);
+    padding: 2px 8px; border-radius: 4px; display: inline-block;
+  }
+
+  .cta-bar {
+    text-align: center; margin-top: 2rem;
+  }
+  .btn-primary {
+    background: #1D4ED8; color: #fff; border: none;
+    padding: 11px 28px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: background 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: #1E40AF; }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+  /* ─── TEMPLATE SELECTION ─── */
+  #screen-templates {
+    padding: 2rem 1.5rem; min-height: 100vh;
+  }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none; color: var(--color-text-secondary);
+    cursor: pointer; font-size: 13px; margin-bottom: 1.5rem;
+    font-family: 'Inter', sans-serif; padding: 0;
+  }
+  .back-btn:hover { color: var(--color-text-primary); }
+
+  .templates-header { text-align: center; margin-bottom: 2rem; }
+  .templates-header h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 6px;
+  }
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--color-background-info); color: var(--color-text-info);
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  }
+
+  .templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px; max-width: 860px; margin: 0 auto 2rem;
+  }
+
+  .template-card {
+    background: var(--color-background-primary);
+    border: 1.5px solid var(--color-border-tertiary);
+    border-radius: 14px; cursor: pointer;
+    overflow: hidden; transition: all 0.2s;
+  }
+  .template-card:hover { border-color: #3B82F6; transform: translateY(-2px); }
+  .template-card.selected { border-color: #3B82F6; border-width: 2px; }
+
+  .template-preview {
+    height: 140px; padding: 12px; display: flex; flex-direction: column; gap: 5px;
+    position: relative;
+  }
+  .tp-header {
+    height: 14px; border-radius: 3px; background: var(--preview-accent);
+    width: 60%;
+  }
+  .tp-sub { height: 8px; border-radius: 3px; background: var(--color-border-tertiary); width: 45%; }
+  .tp-line { height: 6px; border-radius: 2px; background: var(--color-border-tertiary); }
+  .tp-line.short { width: 55%; }
+  .tp-line.medium { width: 75%; }
+  .tp-divider { height: 1px; background: var(--color-border-tertiary); margin: 2px 0; }
+  .tp-badge {
+    height: 10px; width: 30%; border-radius: 10px;
+    background: var(--preview-accent); opacity: 0.3;
+  }
+  .template-info { padding: 10px 12px 12px; }
+  .template-name { font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 2px; }
+  .template-desc { font-size: 11px; color: var(--color-text-secondary); }
+
+  /* ─── BUILDER ─── */
+  #screen-builder { flex-direction: row !important; min-height: 100vh; }
+
+  .builder-sidebar {
+    width: 340px; min-width: 320px; max-width: 340px;
+    background: var(--color-background-primary);
+    border-right: 1px solid var(--color-border-tertiary);
+    display: flex; flex-direction: column;
+    overflow-y: auto; max-height: 100vh;
+  }
+
+  .sidebar-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--color-border-tertiary);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar-header h3 { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
+  .sidebar-header span { font-size: 11px; color: var(--color-text-secondary); }
+
+  .sidebar-sections {
+    padding: 12px 14px; flex: 1;
+  }
+
+  .form-section {
+    margin-bottom: 1rem;
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: 10px; overflow: hidden;
+  }
+  .section-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; cursor: pointer;
+    background: var(--color-background-secondary);
+    border: none; width: 100%; font-family: 'Inter', sans-serif;
+  }
+  .section-toggle span { font-size: 13px; font-weight: 600; color: var(--color-text-primary); display: flex; align-items: center; gap: 7px; }
+  .section-toggle i.ti-chevron-down { font-size: 14px; color: var(--color-text-secondary); transition: transform 0.2s; }
+  .section-toggle.open i.ti-chevron-down { transform: rotate(180deg); }
+
+  .section-body { padding: 12px; display: none; }
+  .section-body.open { display: block; }
+
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 7px 10px; font-size: 13px;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: 7px; background: var(--color-background-primary);
+    color: var(--color-text-primary); font-family: 'Inter', sans-serif;
+    outline: none; transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus { border-color: #3B82F6; }
+  .field textarea { resize: vertical; min-height: 60px; }
+
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .skill-tag {
+    background: var(--color-background-info);
+    color: var(--color-text-info);
+    font-size: 11px; padding: 3px 9px; border-radius: 12px;
+    display: flex; align-items: center; gap: 4px; cursor: pointer;
+  }
+  .skill-tag i { font-size: 10px; }
+
+  .add-entry-btn {
+    width: 100%; padding: 7px; border: 1px dashed var(--color-border-secondary);
+    border-radius: 7px; background: none; color: var(--color-text-secondary);
+    font-size: 12px; cursor: pointer; font-family: 'Inter', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 8px;
+    transition: all 0.15s;
+  }
+  .add-entry-btn:hover { border-color: #3B82F6; color: #3B82F6; }
+
+  .sidebar-footer {
+    padding: 12px 14px; border-top: 1px solid var(--color-border-tertiary);
+    display: flex; gap: 8px;
+  }
+  .btn-secondary {
+    flex: 1; padding: 9px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: all 0.15s;
+    background: none; border: 1px solid var(--color-border-secondary);
+    color: var(--color-text-secondary);
+  }
+  .btn-secondary:hover { border-color: #3B82F6; color: #3B82F6; }
+
+  .btn-download {
+    flex: 1; padding: 9px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif; background: #1D4ED8; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-download:hover { background: #1E40AF; }
+
+  /* ─── PREVIEW ─── */
+  .builder-preview {
+    flex: 1; background: var(--color-background-tertiary);
+    padding: 20px; overflow-y: auto; max-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .preview-toolbar {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    width: 100%; max-width: 640px;
+  }
+  .preview-toolbar span { font-size: 12px; color: var(--color-text-secondary); flex: 1; }
+  .zoom-btn {
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 1px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+    color: var(--color-text-secondary); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+  }
+
+  .resume-paper {
+    background: #fff; width: 100%; max-width: 640px;
+    min-height: 800px; border-radius: 4px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+    padding: 40px 48px; font-family: 'Inter', sans-serif;
+    color: #111; line-height: 1.5;
+  }
+
+  .rp-header { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 2px solid var(--resume-accent, #1D4ED8); }
+  .rp-name { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
+  .rp-title { font-size: 14px; color: var(--resume-accent, #1D4ED8); font-weight: 500; margin: 3px 0 8px; }
+  .rp-contacts { display: flex; flex-wrap: wrap; gap: 10px; }
+  .rp-contact { font-size: 11.5px; color: #475569; display: flex; align-items: center; gap: 4px; }
+  .rp-contact i { font-size: 12px; color: var(--resume-accent, #1D4ED8); }
+
+  .rp-section { margin-bottom: 16px; }
+  .rp-section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--resume-accent, #1D4ED8); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rp-section-title::after { content:''; flex:1; height:1px; background: #e2e8f0; }
+
+  .rp-summary { font-size: 12.5px; color: #374151; line-height: 1.6; }
+
+  .rp-skills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .rp-skill {
+    font-size: 11px; padding: 3px 10px; border-radius: 4px;
+    background: #EFF6FF; color: #1D4ED8; font-weight: 500;
+    border: 1px solid #BFDBFE;
+  }
+
+  .rp-job { margin-bottom: 12px; }
+  .rp-job-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; }
+  .rp-job-title { font-size: 13px; font-weight: 600; color: #0f172a; }
+  .rp-job-company { font-size: 12px; color: var(--resume-accent, #1D4ED8); font-weight: 500; }
+  .rp-job-date { font-size: 11px; color: #64748b; white-space: nowrap; }
+  .rp-job ul { padding-left: 14px; margin-top: 4px; }
+  .rp-job ul li { font-size: 11.5px; color: #374151; margin-bottom: 2px; }
+
+  .rp-edu { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .rp-edu-left .degree { font-size: 13px; font-weight: 600; color: #0f172a; }
+  .rp-edu-left .school { font-size: 12px; color: #475569; }
+  .rp-edu-date { font-size: 11px; color: #64748b; }
+
+  .rp-project { margin-bottom: 10px; }
+  .rp-project-name { font-size: 13px; font-weight: 600; color: #0f172a; }
+  .rp-project-desc { font-size: 11.5px; color: #374151; margin-top: 2px; }
+  .rp-project-tech { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .rp-tech { font-size: 10.5px; padding: 2px 7px; background: #f1f5f9; color: #475569; border-radius: 3px; }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+</style>
+
+<h2 class="sr-only">Resume Builder — select a role and build a professional resume</h2>
+
+<div id="app">
+
+  <!-- ── SCREEN 1: ROLE SELECTION ── -->
+  <div id="screen-roles" class="screen active">
+    <div class="brand">
+      <div class="brand-icon"><i class="ti ti-file-cv" aria-hidden="true"></i></div>
+      <span class="brand-name">Resume<span>Craft</span></span>
+    </div>
+
+    <div class="hero">
+      <h1>Build a resume that<br>actually gets interviews</h1>
+      <p>Pick your role — we tailor the template to what hiring managers actually look for.</p>
+    </div>
+
+    <div class="category-tabs">
+      <div class="cat-tab active" onclick="filterCat('all', this)">All roles</div>
+      <div class="cat-tab" onclick="filterCat('dev', this)">Engineering</div>
+      <div class="cat-tab" onclick="filterCat('data', this)">Data & AI</div>
+      <div class="cat-tab" onclick="filterCat('design', this)">Design & Product</div>
+      <div class="cat-tab" onclick="filterCat('nontec', this)">Non-technical</div>
+    </div>
+
+    <div class="roles-grid" id="roles-grid"></div>
+
+    <div class="cta-bar">
+      <p id="selection-hint" style="font-size:13px;color:var(--color-text-secondary);margin-bottom:10px;">Select a role to continue</p>
+      <button class="btn-primary" id="continue-btn" disabled onclick="goToTemplates()">
+        Choose a template <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 2: TEMPLATE SELECTION ── -->
+  <div id="screen-templates" class="screen">
+    <button class="back-btn" onclick="goToRoles()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back to roles</button>
+    <div class="templates-header">
+      <h2>Pick your template</h2>
+      <div style="margin-top:8px;">
+        <span class="role-badge" id="selected-role-badge"><i class="ti ti-briefcase" aria-hidden="true"></i> <span id="badge-role-name">—</span></span>
+      </div>
+    </div>
+    <div class="templates-grid" id="templates-grid"></div>
+    <div class="cta-bar">
+      <button class="btn-primary" id="start-btn" disabled onclick="goToBuilder()">
+        Start building <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 3: BUILDER ── -->
+  <div id="screen-builder" class="screen">
+    <div class="builder-sidebar">
+      <div class="sidebar-header">
+        <button class="back-btn" style="margin-bottom:0" onclick="goToTemplates()"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+        <div>
+          <h3 id="builder-role-title">Resume Builder</h3>
+          <span id="builder-template-name">Modern template</span>
+        </div>
+      </div>
+      <div class="sidebar-sections" id="sidebar-sections"></div>
+      <div class="sidebar-footer">
+        <button class="btn-secondary" onclick="clearForm()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
+        <button class="btn-download" onclick="downloadResume()"><i class="ti ti-download" aria-hidden="true"></i> Download PDF</button>
+      </div>
+    </div>
+
+    <div class="builder-preview">
+      <div class="preview-toolbar">
+        <span>Live preview — updates as you type</span>
+        <div class="zoom-btn" title="Zoom in"><i class="ti ti-zoom-in" aria-hidden="true"></i></div>
+      </div>
+      <div class="resume-paper" id="resume-paper">
+        <div class="rp-header">
+          <div class="rp-name" id="rp-name">Your Name</div>
+          <div class="rp-title" id="rp-title">Job Title</div>
+          <div class="rp-contacts" id="rp-contacts"></div>
+        </div>
+        <div id="rp-body"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ROLES = [
+  { id:'fe', cat:'dev', name:'Frontend Developer', tag:'React / Vue / Angular', icon:'ti-brand-react', accent:'#2563EB', abg:'#EFF6FF' },
+  { id:'be', cat:'dev', name:'Backend Developer', tag:'Node / Python / Go', icon:'ti-server', accent:'#7C3AED', abg:'#F5F3FF' },
+  { id:'fs', cat:'dev', name:'Full Stack Developer', tag:'End-to-end', icon:'ti-stack-2', accent:'#0D9488', abg:'#F0FDFA' },
+  { id:'mobile', cat:'dev', name:'Mobile Developer', tag:'iOS / Android / RN', icon:'ti-device-mobile', accent:'#DB2777', abg:'#FDF2F8' },
+  { id:'devops', cat:'dev', name:'DevOps / SRE', tag:'CI/CD · Cloud · K8s', icon:'ti-brand-docker', accent:'#1D4ED8', abg:'#EFF6FF' },
+  { id:'cloud', cat:'dev', name:'Cloud / Infra Engineer', tag:'AWS · GCP · Azure', icon:'ti-cloud', accent:'#0369A1', abg:'#F0F9FF' },
+  { id:'sec', cat:'dev', name:'Security Engineer', tag:'AppSec · Pen Testing', icon:'ti-shield-lock', accent:'#BE123C', abg:'#FFF1F2' },
+  { id:'ml', cat:'data', name:'ML Engineer', tag:'PyTorch · TF · MLOps', icon:'ti-brain', accent:'#6D28D9', abg:'#F5F3FF' },
+  { id:'ds', cat:'data', name:'Data Scientist', tag:'Python · R · Statistics', icon:'ti-chart-scatter', accent:'#0F766E', abg:'#F0FDFA' },
+  { id:'de', cat:'data', name:'Data Engineer', tag:'Spark · Kafka · Airflow', icon:'ti-database', accent:'#1D4ED8', abg:'#EFF6FF' },
+  { id:'da', cat:'data', name:'Data Analyst', tag:'SQL · Tableau · Power BI', icon:'ti-chart-bar', accent:'#0369A1', abg:'#F0F9FF' },
+  { id:'llm', cat:'data', name:'AI / LLM Engineer', tag:'GenAI · RAG · Agents', icon:'ti-cpu', accent:'#7C3AED', abg:'#F5F3FF' },
+  { id:'ux', cat:'design', name:'UX / UI Designer', tag:'Figma · Design Systems', icon:'ti-palette', accent:'#DC2626', abg:'#FEF2F2' },
+  { id:'pm', cat:'design', name:'Product Manager', tag:'Roadmap · OKRs', icon:'ti-target', accent:'#D97706', abg:'#FFFBEB' },
+  { id:'qa', cat:'dev', name:'QA Engineer', tag:'Testing · Automation', icon:'ti-checklist', accent:'#047857', abg:'#ECFDF5' },
+  { id:'mkt', cat:'nontec', name:'Marketing Manager', tag:'Growth · Campaigns', icon:'ti-speakerphone', accent:'#EA580C', abg:'#FFF7ED' },
+  { id:'sales', cat:'nontec', name:'Sales Executive', tag:'B2B · CRM · Revenue', icon:'ti-trending-up', accent:'#0891B2', abg:'#ECFEFF' },
+  { id:'hr', cat:'nontec', name:'HR / People Ops', tag:'Recruiting · Culture', icon:'ti-users', accent:'#9333EA', abg:'#FAF5FF' },
+  { id:'finance', cat:'nontec', name:'Finance Analyst', tag:'FP&A · Modelling', icon:'ti-report-money', accent:'#15803D', abg:'#F0FDF4' },
+  { id:'ops', cat:'nontec', name:'Operations Manager', tag:'Process · Efficiency', icon:'ti-settings-2', accent:'#B45309', abg:'#FEFCE8' },
+];
+
+const TEMPLATES = [
+  { id:'modern', name:'Modern', desc:'Clean two-column layout · ATS-friendly', accent:'#2563EB' },
+  { id:'classic', name:'Classic', desc:'Traditional single column · conservative', accent:'#374151' },
+  { id:'technical', name:'Technical', desc:'Skills-first · project highlights', accent:'#7C3AED' },
+  { id:'impact', name:'Impact', desc:'Metric-driven · bold headers', accent:'#0F766E' },
+];
+
+let selectedRole = null;
+let selectedTemplate = null;
+let formData = {};
+
+function renderRoles(cat) {
+  const grid = document.getElementById('roles-grid');
+  const filtered = cat === 'all' ? ROLES : ROLES.filter(r => r.cat === cat);
+  grid.innerHTML = filtered.map(r => `
+    <div class="role-card" id="rc-${r.id}" style="--accent:${r.accent};--accent-bg:${r.abg}" onclick="selectRole('${r.id}')">
+      <div class="check"><i class="ti ti-check" aria-hidden="true"></i></div>
+      <div class="role-icon"><i class="ti ${r.icon}" aria-hidden="true"></i></div>
+      <div class="role-name">${r.name}</div>
+      <div class="role-tag">${r.tag}</div>
+    </div>
+  `).join('');
+  if (selectedRole) {
+    const el = document.getElementById('rc-' + selectedRole.id);
+    if (el) el.classList.add('selected');
+  }
+}
+
+function filterCat(cat, el) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderRoles(cat);
+}
+
+function selectRole(id) {
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById('rc-' + id);
+  if (el) el.classList.add('selected');
+  selectedRole = ROLES.find(r => r.id === id);
+  document.getElementById('continue-btn').disabled = false;
+  document.getElementById('selection-hint').textContent = `Selected: ${selectedRole.name}`;
+}
+
+function goToRoles() {
+  setScreen('screen-roles');
+}
+
+function goToTemplates() {
+  if (!selectedRole) return;
+  document.getElementById('badge-role-name').textContent = selectedRole.name;
+  renderTemplates();
+  setScreen('screen-templates');
+}
+
+function renderTemplates() {
+  const grid = document.getElementById('templates-grid');
+  grid.innerHTML = TEMPLATES.map(t => `
+    <div class="template-card" id="tc-${t.id}" onclick="selectTemplate('${t.id}')" style="--preview-accent:${selectedRole.accent}">
+      <div class="template-preview">
+        <div class="tp-header"></div>
+        <div class="tp-sub"></div>
+        <div class="tp-divider" style="margin-top:4px"></div>
+        <div class="tp-badge"></div>
+        <div class="tp-line medium"></div>
+        <div class="tp-line short"></div>
+        <div class="tp-divider"></div>
+        <div class="tp-line medium"></div>
+        <div class="tp-line short"></div>
+        <div class="tp-line medium"></div>
+        <div class="tp-divider"></div>
+        <div class="tp-badge" style="width:22%"></div>
+        <div class="tp-badge" style="width:18%"></div>
+      </div>
+      <div class="template-info">
+        <div class="template-name">${t.name}</div>
+        <div class="template-desc">${t.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectTemplate(id) {
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('tc-' + id).classList.add('selected');
+  selectedTemplate = TEMPLATES.find(t => t.id === id);
+  document.getElementById('start-btn').disabled = false;
+}
+
+function goToBuilder() {
+  if (!selectedRole || !selectedTemplate) return;
+  document.getElementById('builder-role-title').textContent = selectedRole.name;
+  document.getElementById('builder-template-name').textContent = selectedTemplate.name + ' template';
+  document.documentElement.style.setProperty('--resume-accent', selectedRole.accent);
+  buildSidebar();
+  updatePreview();
+  setScreen('screen-builder');
+}
+
+function buildSidebar() {
+  const isTech = ['dev','data','design'].includes(selectedRole.cat);
+  const sections = [
+    { id:'basics', label:'Personal info', icon:'ti-user', fields:[
+      {id:'name', label:'Full name', type:'text', ph:'Jane Smith'},
+      {id:'title', label:'Job title', type:'text', ph:selectedRole.name},
+      {id:'email', label:'Email', type:'text', ph:'jane@example.com'},
+      {id:'phone', label:'Phone', type:'text', ph:'+1 555 000 0000'},
+      {id:'location', label:'Location', type:'text', ph:'San Francisco, CA'},
+      isTech ? {id:'github', label:'GitHub / Portfolio', type:'text', ph:'github.com/janesmith'} : {id:'linkedin', label:'LinkedIn', type:'text', ph:'linkedin.com/in/janesmith'},
+    ]},
+    { id:'summary', label:'Summary', icon:'ti-align-left', fields:[
+      {id:'summary', label:'Professional summary', type:'textarea', ph:'Briefly describe your background and what you bring to the team...'},
+    ]},
+    isTech ? { id:'skills', label:'Technical skills', icon:'ti-code', fields:[
+      {id:'skills_langs', label:'Languages', type:'text', ph:'Python, TypeScript, Go'},
+      {id:'skills_fws', label:'Frameworks & tools', type:'text', ph:'React, FastAPI, Docker'},
+      {id:'skills_cloud', label:'Cloud & infra', type:'text', ph:'AWS, Kubernetes, Terraform'},
+    ]} : { id:'skills', label:'Core skills', icon:'ti-star', fields:[
+      {id:'skills_core', label:'Key skills', type:'text', ph:'Leadership, Project Management, CRM'},
+    ]},
+    { id:'experience', label:'Experience', icon:'ti-briefcase', fields:[
+      {id:'exp1_title', label:'Job title', type:'text', ph:'Senior Engineer'},
+      {id:'exp1_company', label:'Company', type:'text', ph:'Acme Corp'},
+      {id:'exp1_dates', label:'Dates', type:'text', ph:'Jan 2022 – Present'},
+      {id:'exp1_bullets', label:'Key achievements', type:'textarea', ph:'• Built X that improved Y by Z%\n• Led team of N engineers\n• Reduced latency by 40%'},
+    ]},
+    isTech ? { id:'projects', label:'Projects', icon:'ti-folder', fields:[
+      {id:'proj1_name', label:'Project name', type:'text', ph:'OpenSourceProject'},
+      {id:'proj1_desc', label:'Description', type:'textarea', ph:'What it does and your role in it...'},
+      {id:'proj1_tech', label:'Tech stack', type:'text', ph:'React, Node.js, PostgreSQL'},
+    ]} : null,
+    { id:'education', label:'Education', icon:'ti-school', fields:[
+      {id:'edu_degree', label:'Degree', type:'text', ph:'B.S. Computer Science'},
+      {id:'edu_school', label:'School', type:'text', ph:'University of California'},
+      {id:'edu_dates', label:'Dates', type:'text', ph:'2016 – 2020'},
+    ]},
+  ].filter(Boolean);
+
+  const container = document.getElementById('sidebar-sections');
+  container.innerHTML = sections.map(s => `
+    <div class="form-section">
+      <button class="section-toggle" onclick="toggleSection('${s.id}', this)">
+        <span><i class="ti ${s.icon}" aria-hidden="true"></i>${s.label}</span>
+        <i class="ti ti-chevron-down" aria-hidden="true"></i>
+      </button>
+      <div class="section-body" id="sb-${s.id}">
+        ${s.fields.map(f => `
+          <div class="field">
+            <label for="f-${f.id}">${f.label}</label>
+            ${f.type === 'textarea'
+              ? `<textarea id="f-${f.id}" placeholder="${f.ph}" oninput="updateField('${f.id}', this.value)"></textarea>`
+              : `<input type="text" id="f-${f.id}" placeholder="${f.ph}" oninput="updateField('${f.id}', this.value)">`
+            }
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const first = container.querySelector('.section-toggle');
+  if (first) {
+    first.classList.add('open');
+    first.nextElementSibling.classList.add('open');
+  }
+}
+
+function toggleSection(id, btn) {
+  btn.classList.toggle('open');
+  document.getElementById('sb-' + id).classList.toggle('open');
+}
+
+function updateField(id, val) {
+  formData[id] = val;
+  updatePreview();
+}
+
+function updatePreview() {
+  const d = formData;
+  document.getElementById('rp-name').textContent = d.name || 'Your Name';
+  document.getElementById('rp-title').textContent = d.title || selectedRole.name;
+
+  const contacts = [];
+  if (d.email) contacts.push(`<span class="rp-contact"><i class="ti ti-mail" aria-hidden="true"></i>${d.email}</span>`);
+  if (d.phone) contacts.push(`<span class="rp-contact"><i class="ti ti-phone" aria-hidden="true"></i>${d.phone}</span>`);
+  if (d.location) contacts.push(`<span class="rp-contact"><i class="ti ti-map-pin" aria-hidden="true"></i>${d.location}</span>`);
+  if (d.github) contacts.push(`<span class="rp-contact"><i class="ti ti-brand-github" aria-hidden="true"></i>${d.github}</span>`);
+  if (d.linkedin) contacts.push(`<span class="rp-contact"><i class="ti ti-brand-linkedin" aria-hidden="true"></i>${d.linkedin}</span>`);
+  document.getElementById('rp-contacts').innerHTML = contacts.join('');
+
+  const isTech = ['dev','data','design'].includes(selectedRole.cat);
+  let body = '';
+
+  if (d.summary) {
+    body += `<div class="rp-section">
+      <div class="rp-section-title">Summary</div>
+      <p class="rp-summary">${d.summary}</p>
+    </div>`;
+  }
+
+  const skillParts = isTech
+    ? [d.skills_langs, d.skills_fws, d.skills_cloud].filter(Boolean).join(', ')
+    : (d.skills_core || '');
+  if (skillParts) {
+    const tags = skillParts.split(',').map(s => s.trim()).filter(Boolean);
+    body += `<div class="rp-section">
+      <div class="rp-section-title">${isTech ? 'Technical Skills' : 'Core Skills'}</div>
+      <div class="rp-skills">${tags.map(t => `<span class="rp-skill">${t}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  if (d.exp1_title || d.exp1_company) {
+    const bullets = (d.exp1_bullets || '').split('\n').filter(b => b.trim().replace('•','').trim());
+    body += `<div class="rp-section">
+      <div class="rp-section-title">Experience</div>
+      <div class="rp-job">
+        <div class="rp-job-header">
+          <div>
+            <div class="rp-job-title">${d.exp1_title || '—'}</div>
+            <div class="rp-job-company">${d.exp1_company || ''}</div>
+          </div>
+          <div class="rp-job-date">${d.exp1_dates || ''}</div>
+        </div>
+        ${bullets.length ? `<ul>${bullets.map(b => `<li>${b.replace(/^•\s*/,'')}</li>`).join('')}</ul>` : ''}
+      </div>
+    </div>`;
+  }
+
+  if (isTech && (d.proj1_name || d.proj1_desc)) {
+    const techs = (d.proj1_tech || '').split(',').map(t => t.trim()).filter(Boolean);
+    body += `<div class="rp-section">
+      <div class="rp-section-title">Projects</div>
+      <div class="rp-project">
+        <div class="rp-project-name">${d.proj1_name || '—'}</div>
+        <div class="rp-project-desc">${d.proj1_desc || ''}</div>
+        ${techs.length ? `<div class="rp-project-tech">${techs.map(t => `<span class="rp-tech">${t}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  if (d.edu_degree || d.edu_school) {
+    body += `<div class="rp-section">
+      <div class="rp-section-title">Education</div>
+      <div class="rp-edu">
+        <div class="rp-edu-left">
+          <div class="degree">${d.edu_degree || '—'}</div>
+          <div class="school">${d.edu_school || ''}</div>
+        </div>
+        <div class="rp-edu-date">${d.edu_dates || ''}</div>
+      </div>
+    </div>`;
+  }
+
+  if (!body) {
+    body = `<div style="padding:40px 0;text-align:center;color:#94a3b8;font-size:13px;">
+      <i class="ti ti-arrow-left" style="font-size:18px;display:block;margin-bottom:8px" aria-hidden="true"></i>
+      Fill in the form to see your resume take shape
+    </div>`;
+  }
+
+  document.getElementById('rp-body').innerHTML = body;
+}
+
+function clearForm() {
+  formData = {};
+  document.querySelectorAll('#sidebar-sections input, #sidebar-sections textarea').forEach(el => el.value = '');
+  updatePreview();
+}
+
+function downloadResume() {
+  alert('In a production build, this would trigger a high-fidelity PDF export (e.g. via print-to-PDF or a server-side renderer). For now, use your browser\'s Print → Save as PDF!');
+}
+
+function setScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+renderRoles('all');
+</script>
